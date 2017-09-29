@@ -27,7 +27,7 @@ def main():
     train(args)
 
 # saves 10x10 sample of generated images
-def generate_samples(step, args, n=0, save=True):
+def generate_samples(args, step, n=0, save=True):
     zz = np.random.normal(0., 1., (100, args.z_size))
     generated_classes = np.array(list(range(0,10)) * 10)
     generated_images = G.predict([zz, generated_classes.reshape(-1, 1)])
@@ -43,7 +43,7 @@ def generate_samples(step, args, n=0, save=True):
 
     return img
 
-def update_tb_summary(step, sw, D_true_losses, D_fake_losses, DG_losses, write_sample_images=True):
+def update_tb_summary(args, step, sw, D_true_losses, D_fake_losses, DG_losses, write_sample_images=True):
     s = tf.Summary()
 
     for names, vals in zip((('D_real_is_fake', 'D_real_class'),
@@ -62,8 +62,8 @@ def update_tb_summary(step, sw, D_true_losses, D_fake_losses, DG_losses, write_s
     v.simple_value = -D_true_losses[-1][1] - D_fake_losses[-1][1]
     v.tag = 'D loss (-1*D_real_is_fake - D_fake_is_fake)'
 
-    if write_ample_images:
-        img = generate_samples(step, save=True)
+    if write_sample_images:
+        img = generate_samples(args, step, save=True)
         s.MergeFromString(tf.Session().run(
             tf.summary.image('samples_%07d' % step, img.reshape([1, *img.shape, 1]))))
 
@@ -161,7 +161,7 @@ def train(args):
         DG_losses.append(DG_loss)
 
         if i % 10 == 0:
-            update_tb_summary(i, sw, D_true_losses, D_fake_losses, DG_losses, write_sample_images=(i%250==0))
+            update_tb_summary(args, i, sw, D_true_losses, D_fake_losses, DG_losses, write_sample_images=(i%250==0))
 
 if __name__ == '__main__':
     main()
