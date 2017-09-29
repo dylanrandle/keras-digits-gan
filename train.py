@@ -96,7 +96,7 @@ def train(args):
         if len(D_true_losses) > 0:
             progress_bar.update(
                 i, 
-                values=[
+                values=[ #avg of last 5
                     ('D_real_is_fake', np.mean(D_true_losses[-5:], axis=0)[1]),
                     ('D_real_class', np.mean(D_true_losses[-5:], axis=0)[2]),
                     ('D_fake_is_fake', np.mean(D_fake_losses[-5:], axis=0)[1]),
