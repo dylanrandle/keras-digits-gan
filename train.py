@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
+import keras.backend as K
 from keras.datasets import mnist
 from keras.utils.generic_utils import Progbar
 
@@ -146,6 +147,10 @@ def train(args):
             update_tb_summary(G, i, D_true_losses, D_fake_losses, DG_losses, write_sample_images=(i%250==0))
 
 if __name__ == '__main__':
+    K.set_image_dim_ordering('tf') # force last dimension for image channels
+    RND = 777 # seed for RNG
+    np.random.seed(RND)
+
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--batch_size', type=int, default=100)
     parser.add_argument('--num_iterations', type=int, default=10000)

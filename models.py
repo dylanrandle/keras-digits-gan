@@ -1,13 +1,8 @@
-import keras.backend as K
 from keras.layers import *
 from keras.models import *
 from keras.optimizers import *
 from keras.initializers import *
 from keras.callbacks import *
-
-K.set_image_dim_ordering('tf') # force last dimension for image channels
-RND = 999 # seed for RNG
-np.random.seed(RND)
 
 def d_loss(y_true, y_pred):
     return K.mean(y_true * y_pred)
