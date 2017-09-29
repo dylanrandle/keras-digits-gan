@@ -10,27 +10,10 @@ from keras.utils.generic_utils import Progbar
 
 from models import *
 
-def main():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--batch_size', type=int, default=100)
-    parser.add_argument('--num_iterations', type=int, default=10000)
-    parser.add_argument('--z_size', type=int, default=100, help='dimension of latent Z variable')
-    parser.add_argument('--d_iters', type=int, default=5, help='num iterations to train D for every 1 iteration of G')
-    parser.add_argument('--log_dir', type=str, default='./logs')
-    parser.add_argument('--save_dir', type=str, default='./save')
-
-    args = parser.parse_args()
-
-    if not os.path.isdir(args.save_dir): os.makedirs(args.save_dir)
-    if not os.path.isdir(args.log_dir): os.makedirs(args.log_dir)
-
-    train(args)
-
 # saves 10x10 sample of generated images
-def generate_samples(args, G, step, n=0, save=True):
-    zz = np.random.normal(0., 1., (100, args.z_size))
+def generate_samples(G, step, n=0, save=True):
     generated_classes = np.array(list(range(0,10)) * 10)
-    generated_images = G.predict([zz, generated_classes.reshape(-1, 1)])
+    generated_images = G.predict([samples_zz, generated_classes.reshape(-1, 1)])
 
     rr = []
     for c in range(10):
@@ -43,7 +26,7 @@ def generate_samples(args, G, step, n=0, save=True):
 
     return img
 
-def update_tb_summary(args, G, step, sw, D_true_losses, D_fake_losses, DG_losses, write_sample_images=True):
+def update_tb_summary(G, step, D_true_losses, D_fake_losses, DG_losses, write_sample_images=True):
     s = tf.Summary()
 
     for names, vals in zip((('D_real_is_fake', 'D_real_class'),
@@ -63,7 +46,7 @@ def update_tb_summary(args, G, step, sw, D_true_losses, D_fake_losses, DG_losses
     v.tag = 'D loss (-1*D_real_is_fake - D_fake_is_fake)'
 
     if write_sample_images:
-        img = generate_samples(args, G, step, save=True)
+        img = generate_samples(G, step, save=True)
         s.MergeFromString(tf.Session().run(
             tf.summary.image('samples_%07d' % step, img.reshape([1, *img.shape, 1]))))
 
@@ -80,7 +63,6 @@ def train(args):
     X_train = (X_train.astype(np.float32) - 127.5) / 127.5
     X_train = np.expand_dims(X_train, axis=3)
 
-    sw = tf.summary.FileWriter(args.log_dir)
     progress_bar = Progbar(target=args.num_iterations)
 
     DG_losses = []
@@ -161,7 +143,23 @@ def train(args):
         DG_losses.append(DG_loss)
 
         if i % 10 == 0:
-            update_tb_summary(args, G, i, sw, D_true_losses, D_fake_losses, DG_losses, write_sample_images=(i%250==0))
+            update_tb_summary(G, i, D_true_losses, D_fake_losses, DG_losses, write_sample_images=(i%250==0))
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--batch_size', type=int, default=100)
+    parser.add_argument('--num_iterations', type=int, default=10000)
+    parser.add_argument('--z_size', type=int, default=100, help='dimension of latent Z variable')
+    parser.add_argument('--d_iters', type=int, default=5, help='num iterations to train D for every 1 iteration of G')
+    parser.add_argument('--log_dir', type=str, default='./logs')
+    parser.add_argument('--save_dir', type=str, default='./save')
+
+    args = parser.parse_args()
+
+    if not os.path.isdir(args.save_dir): os.makedirs(args.save_dir)
+    if not os.path.isdir(args.log_dir): os.makedirs(args.log_dir)
+
+    samples_zz = np.random.normal(0., 1., (100, args.z_size))
+    sw = tf.summary.FileWriter(args.log_dir)
+
+    train(args)
