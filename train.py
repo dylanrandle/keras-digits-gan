@@ -5,13 +5,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-# import keras.backend as K
 from keras.datasets import mnist
-# from keras.layers import *
-# from keras.models import *
-# from keras.optimizers import *
-# from keras.initializers import *
-# from keras.callbacks import *
 from keras.utils.generic_utils import Progbar
 
 from models import *
@@ -49,7 +43,7 @@ def generate_samples(step, args, n=0, save=True):
 
     return img
 
-def update_tb_summary(step, write_sample_images=True):
+def update_tb_summary(step, sw, D_true_losses, D_fake_losses, DG_losses, write_sample_images=True):
     s = tf.Summary()
 
     for names, vals in zip((('D_real_is_fake', 'D_real_class'),
@@ -167,7 +161,7 @@ def train(args):
         DG_losses.append(DG_loss)
 
         if i % 10 == 0:
-            update_tb_summary(i, write_sample_images=(i%250==0))
+            update_tb_summary(i, sw, D_true_losses, D_fake_losses, DG_losses, write_sample_images=(i%250==0))
 
 if __name__ == '__main__':
     main()

@@ -1,11 +1,9 @@
 import keras.backend as K
-from keras.datasets import mnist
 from keras.layers import *
 from keras.models import *
 from keras.optimizers import *
 from keras.initializers import *
 from keras.callbacks import *
-from keras.utils.generic_utils import Progbar
 
 K.set_image_dim_ordering('tf') # force last dimension for image channels
 RND = 999 # seed for RNG
